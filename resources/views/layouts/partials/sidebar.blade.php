@@ -8,7 +8,7 @@
       </span>
       <div class="d-flex flex-column">
         <span class="app-brand-text demo menu-text fw-bolder text-primary fs-5 lh-1">Sarraf-QMS</span>
-        <small class="text-muted fw-bold" style="font-size: 9px; letter-spacing: 0.5px;">صراف &bull; CORE BANKING QMS</small>
+        <small class="text-muted fw-bold text-uppercase" style="font-size: 9px; letter-spacing: 0.8px;">NATIONAL BANKING QMS</small>
       </div>
     </a>
 

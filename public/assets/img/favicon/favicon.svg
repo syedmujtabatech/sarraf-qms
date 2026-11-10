@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bankGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- Background Rounded Squircle -->
+  <rect width="64" height="64" rx="16" fill="url(#bankGrad)"/>
+  
+  <!-- Bank Building in Crisp White -->
+  <g fill="#ffffff" filter="url(#shadow)">
+    <!-- Roof / Triangular Pediment -->
+    <polygon points="32,13 13,24 51,24"/>
+    <!-- Top Beam -->
+    <rect x="14" y="26" width="36" height="3" rx="1"/>
+    <!-- 4 Pillars -->
+    <rect x="16" y="31" width="5" height="14" rx="1"/>
+    <rect x="25" y="31" width="5" height="14" rx="1"/>
+    <rect x="34" y="31" width="5" height="14" rx="1"/>
+    <rect x="43" y="31" width="5" height="14" rx="1"/>
+    <!-- Bottom Base -->
+    <rect x="12" y="47" width="40" height="4" rx="1.5"/>
+  </g>
+</svg>

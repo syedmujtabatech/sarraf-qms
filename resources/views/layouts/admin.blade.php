@@ -16,7 +16,9 @@
     <title>@yield('title', 'Sarraf-QMS') | National Bank Queue Management System</title>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon.png') }}?v=3" />
+    <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v=3" />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -51,8 +51,15 @@
 
         <!-- Mobile QR Code -->
         @php
-          $lanHost = (request()->getHost() === '127.0.0.1' || request()->getHost() === 'localhost') ? '192.168.100.9:8080' : request()->getHttpHost();
-          $apptQrUrl = request()->getScheme() . '://' . $lanHost . '/appointment/confirmation/' . $appointment->id;
+          $currentHost = request()->getHttpHost();
+          $isLocal = in_array(request()->getHost(), ['127.0.0.1', 'localhost']);
+          if ($isLocal && !empty(config('app.url')) && !str_contains(config('app.url'), 'localhost') && !str_contains(config('app.url'), '127.0.0.1')) {
+              $baseUrl = rtrim(config('app.url'), '/');
+          } else {
+              $scheme = (request()->isSecure() || request()->header('x-forwarded-proto') === 'https') ? 'https' : request()->getScheme();
+              $baseUrl = $scheme . '://' . $currentHost;
+          }
+          $apptQrUrl = $baseUrl . '/appointment/confirmation/' . $appointment->id;
         @endphp
         <div class="mb-4">
           <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={{ urlencode($apptQrUrl) }}" alt="QR" class="img-fluid border p-2 rounded shadow-xs" width="130" />

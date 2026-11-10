@@ -59,8 +59,15 @@
   <!-- Main Touch Screen Body -->
   <main class="flex-grow-1 container py-4 d-flex flex-column justify-content-center">
     @php
-      $lanHost = (request()->getHost() === '127.0.0.1' || request()->getHost() === 'localhost') ? '192.168.100.9:8080' : request()->getHttpHost();
-      $mobileJoinUrl = request()->getScheme() . '://' . $lanHost . '/join';
+      $currentHost = request()->getHttpHost();
+      $isLocal = in_array(request()->getHost(), ['127.0.0.1', 'localhost']);
+      if ($isLocal && !empty(config('app.url')) && !str_contains(config('app.url'), 'localhost') && !str_contains(config('app.url'), '127.0.0.1')) {
+          $baseUrl = rtrim(config('app.url'), '/');
+      } else {
+          $scheme = (request()->isSecure() || request()->header('x-forwarded-proto') === 'https') ? 'https' : request()->getScheme();
+          $baseUrl = $scheme . '://' . $currentHost;
+      }
+      $mobileJoinUrl = $baseUrl . '/join';
     @endphp
 
     <!-- Entrance Mobile QR Quick Pass Card -->

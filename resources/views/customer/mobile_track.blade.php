@@ -13,7 +13,7 @@
         <i class="bx bxs-bank fs-4"></i>
       </div>
       <div>
-        <h6 class="mb-0 fw-bold text-white">Sarraf Mobile E-Pass (صراف)</h6>
+        <h6 class="mb-0 fw-bold text-white">Sarraf Mobile E-Pass</h6>
         <small class="text-white-50" style="font-size: 11px;">{{ $token->branch->name }}</small>
       </div>
     </div>
@@ -28,10 +28,7 @@
   <!-- Notification Banner when Token is Called -->
   <div id="calledBanner" class="alert alert-warning mb-0 border-0 rounded-0 py-3 px-3 shadow text-center d-none" style="animation: pulseCard 1s infinite alternate;">
     <div class="fs-4 fw-bolder text-dark mb-1">
-      <i class="bx bx-bell bx-tada text-danger me-1"></i> {{ $token->salutation ?? 'Mr.' }} {{ $token->customer_name }}, YOUR TURN HAS ARRIVED!
-    </div>
-    <div class="urdu-font fs-5 text-dark mb-1" style="line-height: 1.2;">
-      آپ کا نمبر بلایا گیا ہے! براہِ کرم کاؤنٹر پر تشریف لائیں
+      <i class="bx bx-bell bx-tada text-danger me-1"></i> {{ $token->customer_name }}, YOUR TURN HAS ARRIVED!
     </div>
     <div class="fs-5 fw-bold text-primary" id="calledCounterText">
       Please proceed to Counter #{{ $token->counter->counter_number ?? '-' }}
@@ -43,12 +40,9 @@
     <!-- Big Token Pass Card -->
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-3">
       <div class="card-header bg-label-primary text-center py-3 border-bottom border-light">
-        <span class="badge bg-primary text-uppercase px-3 py-1 mb-1 font-monospace" style="font-size: 11px;">
+        <span class="badge bg-primary text-uppercase px-3 py-1 mb-0 font-monospace" style="font-size: 12px;">
           {{ $token->serviceCategory->name }}
         </span>
-        <div class="urdu-font text-muted small" style="line-height: 1;">
-          {{ $token->serviceCategory->name_ur }}
-        </div>
       </div>
 
       <div class="card-body p-4 text-center">
@@ -58,17 +52,10 @@
         </h1>
 
         <div class="fs-4 fw-bolder text-dark mt-1">
-          <span class="text-primary">{{ $token->salutation ?? 'Mr.' }}</span> {{ $token->customer_name }}
+          {{ $token->customer_name }}
         </div>
-        @if($token->account_number)
-          <div class="small text-muted font-monospace"><i class="bx bx-credit-card me-1"></i> A/C: {{ $token->account_number }}</div>
-        @endif
-        @if($token->transaction_purpose)
-          <div class="mt-1">
-            <span class="badge bg-label-info" style="font-size: 11px;">
-              {{ $token->transaction_purpose }} @if($token->expected_amount) &bull; PKR {{ number_format($token->expected_amount, 0) }} @endif
-            </span>
-          </div>
+        @if($token->customer_phone)
+          <div class="small text-muted font-monospace"><i class="bx bx-phone me-1"></i> {{ $token->customer_phone }}</div>
         @endif
         
         <!-- Priority Badge -->
@@ -77,11 +64,6 @@
             <i class="bx {{ $token->priorityCategory->icon ?? 'bx-user' }} me-1"></i>
             {{ $token->priorityCategory->name }}
           </span>
-          @if($token->priorityCategory->code !== 'REGULAR')
-            <small class="d-block text-danger fw-semibold mt-1" style="font-size: 11px;">
-              * SBP Fast-Track Priority Precedence Active *
-            </small>
-          @endif
         </div>
       </div>
 
@@ -133,28 +115,28 @@
       <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white mb-3">
         <i class="bx bx-check-circle fs-1 text-success mb-2"></i>
         <h5 class="fw-bold mb-1">Service Completed!</h5>
-        <p class="text-muted small mb-3">Thank you for visiting State Bank. Please take a moment to rate our service.</p>
+        <p class="text-muted small mb-3">Thank you for visiting our branch. Please take a moment to rate our service.</p>
         <a href="{{ route('feedback.index', ['token_id' => $token->id]) }}" class="btn btn-warning btn-lg fw-bold w-100 py-3 shadow">
           <i class="bx bx-star me-1"></i> Rate Your Experience (1-5 Stars)
         </a>
       </div>
     </div>
 
-    <!-- SBP Customer Rights Accordion -->
+    <!-- Branch Info Card -->
     <div class="card shadow-sm border-0 rounded-4 p-3 bg-white">
-      <div class="d-flex align-items-center mb-2">
-        <i class="bx bx-shield-quarter text-primary fs-4 me-2"></i>
-        <h6 class="mb-0 fw-bold text-dark">State Bank Priority Guidelines</h6>
+      <div class="d-flex align-items-center mb-1">
+        <i class="bx bx-buildings text-primary fs-4 me-2"></i>
+        <h6 class="mb-0 fw-bold text-dark">{{ $token->branch->name }}</h6>
       </div>
       <p class="text-muted small mb-0" style="font-size: 12px;">
-        As per State Bank of Pakistan (SBP) instructions, special persons (PWDs), senior citizens (60+) and pensioners receive fast-track service precedence. For assistance, contact the branch manager.
+        {{ $token->branch->address ?? 'Branch Location' }} &bull; Phone: {{ $token->branch->phone ?? 'UAN: 111-SARRAF' }}
       </p>
     </div>
   </main>
 
   <!-- Mobile Footer -->
   <footer class="p-3 text-center text-muted small border-top bg-white">
-    <div>State Bank Electronic Queue System &bull; Live Mobile Pass</div>
+    <div>Sarraf Banking Queue System &bull; Live Mobile Pass</div>
     <div class="mt-1" style="font-size: 10px;">Token Issued: {{ $token->created_at->format('d M Y, h:i A') }}</div>
   </footer>
 </div>
@@ -174,78 +156,72 @@
   const tokenNumber = "{{ $token->token_number }}";
   let previousStatus = "{{ $token->status }}";
 
-  // Function to play phone ding & vibrate phone when called
   function notifyPhoneUser(counterNum) {
-    // 1. Mobile Vibration API
     if ('vibrate' in navigator) {
       navigator.vibrate([300, 150, 300, 150, 500]);
     }
-
-    // 2. Audio Chime
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(880, now);
-      gain.gain.setValueAtTime(0.3, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 1);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 1);
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.5);
     } catch(e) {}
   }
 
   function pollMobileStatus() {
-    $.ajax({
-      url: "{{ url('m/api/status') }}/" + tokenNumber,
-      method: 'GET',
-      success: function(res) {
-        // Update live counters
-        $('#tokensAheadCount').text(res.tokens_ahead);
-        $('#estWaitMins').text('~' + res.estimated_minutes + 'm');
+    fetch("{{ route('mobile.status', $token->token_number) }}")
+      .then(res => res.json())
+      .then(data => {
+        // Update status badge
+        const badgeWrap = document.getElementById('statusBadgeWrap');
+        const calledBanner = document.getElementById('calledBanner');
+        const waitingStatsCard = document.getElementById('waitingStatsCard');
+        const servingCounterCard = document.getElementById('servingCounterCard');
+        const feedbackPromptCard = document.getElementById('feedbackPromptCard');
 
-        // Check for Status Change
-        if (res.status !== previousStatus) {
-          if (res.status === 'called') {
-            notifyPhoneUser(res.counter_number);
+        if (data.status === 'called') {
+          calledBanner.classList.remove('d-none');
+          document.getElementById('calledCounterText').innerText = 'Please proceed to ' + (data.counter_name || ('Counter #' + data.counter_number));
+          if (previousStatus !== 'called') {
+            notifyPhoneUser(data.counter_number);
           }
-          previousStatus = res.status;
+          badgeWrap.innerHTML = '<span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="bx bx-bell bx-tada me-1"></i> CALLED TO COUNTER</span>';
+        } else if (data.status === 'serving') {
+          calledBanner.classList.add('d-none');
+          servingCounterCard.classList.remove('d-none');
+          document.getElementById('cardCounterName').innerText = (data.counter_name || ('Counter #' + data.counter_number));
+          document.getElementById('cardTellerName').innerText = 'Serving Teller: ' + (data.teller_name || 'Counter Operator');
+          badgeWrap.innerHTML = '<span class="badge bg-primary fs-6 px-3 py-2"><i class="bx bx-user-check me-1"></i> CURRENTLY SERVING</span>';
+        } else if (data.status === 'completed') {
+          calledBanner.classList.add('d-none');
+          waitingStatsCard.classList.add('d-none');
+          servingCounterCard.classList.add('d-none');
+          feedbackPromptCard.classList.remove('d-none');
+          badgeWrap.innerHTML = '<span class="badge bg-success fs-6 px-3 py-2"><i class="bx bx-check-double me-1"></i> SERVICE COMPLETED</span>';
+        } else if (data.status === 'no_show') {
+          calledBanner.classList.add('d-none');
+          badgeWrap.innerHTML = '<span class="badge bg-danger fs-6 px-3 py-2"><i class="bx bx-x-circle me-1"></i> NO SHOW / CANCELLED</span>';
+        } else {
+          badgeWrap.innerHTML = '<span class="badge bg-info fs-6 px-3 py-2"><i class="bx bx-time me-1"></i> IN WAITING QUEUE</span>';
         }
 
-        // Render Status Specific UI
-        if (res.status === 'called') {
-          $('#calledBanner').removeClass('d-none');
-          $('#calledCounterText').text('Please proceed to Counter #' + res.counter_number);
-          $('#servingCounterCard').removeClass('d-none');
-          $('#cardCounterName').text('Counter #' + res.counter_number);
-          $('#cardTellerName').text(res.teller_name ? 'Teller: ' + res.teller_name : 'Staff Desk');
-          $('#statusBadgeWrap').html('<span class="badge bg-warning fs-6 pulse-dot"><i class="bx bx-bell me-1"></i> Called to Counter #' + res.counter_number + '</span>');
-        } else if (res.status === 'serving') {
-          $('#calledBanner').addClass('d-none');
-          $('#servingCounterCard').removeClass('d-none');
-          $('#cardCounterName').text('Counter #' + res.counter_number);
-          $('#cardTellerName').text(res.teller_name ? 'Teller: ' + res.teller_name : 'Staff Desk');
-          $('#statusBadgeWrap').html('<span class="badge bg-info fs-6"><i class="bx bx-user-voice me-1"></i> Currently Serving at Counter #' + res.counter_number + '</span>');
-        } else if (res.status === 'completed') {
-          $('#calledBanner').addClass('d-none');
-          $('#waitingStatsCard').addClass('d-none');
-          $('#servingCounterCard').addClass('d-none');
-          $('#feedbackPromptCard').removeClass('d-none');
-          $('#statusBadgeWrap').html('<span class="badge bg-success fs-6"><i class="bx bx-check-circle me-1"></i> Transaction Completed</span>');
-        } else if (res.status === 'waiting') {
-          $('#statusBadgeWrap').html('<span class="badge bg-warning fs-6"><i class="bx bx-time-five me-1"></i> Waiting in Queue</span>');
-        }
-      },
-      error: function(err) {
-        console.warn("Poll error:", err);
-      }
-    });
+        // Update counts
+        document.getElementById('tokensAheadCount').innerText = data.tokens_ahead;
+        document.getElementById('estWaitMins').innerText = '~' + data.estimated_minutes + 'm';
+
+        previousStatus = data.status;
+      })
+      .catch(err => console.log('Mobile tracker polling error', err));
   }
 
-  // Poll status every 3 seconds
+  // Poll every 3 seconds
   setInterval(pollMobileStatus, 3000);
 </script>
 @endpush

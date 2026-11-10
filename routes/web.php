@@ -64,6 +64,9 @@ Route::prefix('feedback')->name('feedback.')->group(function () {
 // Mobile Entrance QR Self-Service Token Generation
 Route::get('/join', [MobileTrackerController::class, 'joinForm'])->name('mobile.join');
 Route::post('/join', [MobileTrackerController::class, 'processJoin'])->name('mobile.join.post');
+Route::get('/branch/{branch}', function (\App\Models\Branch $branch) {
+    return redirect()->route('mobile.join', ['branch' => $branch->id]);
+})->name('branch.direct');
 
 // Mobile Live Token Tracking (Scan QR Code from Phone)
 Route::get('/m/{tokenNumber}', [MobileTrackerController::class, 'show'])->name('mobile.track');
@@ -95,10 +98,15 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::resource('regions', RegionController::class)->except(['create', 'edit', 'show']);
 
     // Branch Management
+    Route::get('branches/{branch}/qr', [BranchController::class, 'showQr'])->name('branches.qr');
     Route::resource('branches', BranchController::class)->except(['create', 'edit', 'show']);
 
     // Counter Management
+    Route::post('counters/{counter}/toggle', [CounterController::class, 'toggleStatus'])->name('counters.toggle');
     Route::resource('counters', CounterController::class)->except(['create', 'edit', 'show']);
+
+    // Quick Ticket Generation for Branch Managers & Admins
+    Route::post('/quick-ticket', [DashboardController::class, 'quickTicket'])->name('quickTicket');
 
     // Service Categories
     Route::resource('services', ServiceCategoryController::class)->except(['create', 'edit', 'show']);

@@ -19,8 +19,17 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
-        $selectedBranchId = $request->get('branch_id', Branch::first()->id ?? 1);
-        $branches = Branch::where('is_active', true)->get();
+        $user = auth()->user();
+        $isBranchManager = $user && $user->role === 'branch_manager';
+
+        if ($isBranchManager && $user->branch_id) {
+            $selectedBranchId = (int) $user->branch_id;
+            $branches = Branch::where('id', $selectedBranchId)->get();
+        } else {
+            $selectedBranchId = (int) $request->get('branch_id', Branch::first()->id ?? 1);
+            $branches = Branch::where('is_active', true)->get();
+        }
+
         $currentBranch = Branch::with(['counters.services', 'counters.currentUser'])->find($selectedBranchId);
 
         if (!$currentBranch && $branches->isNotEmpty()) {
@@ -48,7 +57,7 @@ class DashboardController extends Controller
             $q->where('branch_id', $selectedBranchId)->whereDate('created_at', Carbon::today());
         }])->get();
 
-        // Priority categories distribution today (SBP compliance)
+        // Priority categories distribution today
         $priorityStats = PriorityCategory::withCount(['tokens' => function ($q) use ($selectedBranchId) {
             $q->where('branch_id', $selectedBranchId)->whereDate('created_at', Carbon::today());
         }])->get();
@@ -56,6 +65,10 @@ class DashboardController extends Controller
         // Average feedback rating
         $avgFeedback = CustomerFeedback::where('branch_id', $selectedBranchId)->avg('rating') ?: 4.8;
         $totalFeedbacks = CustomerFeedback::where('branch_id', $selectedBranchId)->count();
+
+        // Services & Priorities for quick ticket issuance
+        $services = ServiceCategory::where('is_active', true)->get();
+        $priorities = PriorityCategory::where('is_active', true)->get();
 
         return view('admin.dashboard', compact(
             'branches',
@@ -67,8 +80,39 @@ class DashboardController extends Controller
             'serviceStats',
             'priorityStats',
             'avgFeedback',
-            'totalFeedbacks'
+            'totalFeedbacks',
+            'isBranchManager',
+            'services',
+            'priorities'
         ));
+    }
+
+    public function quickTicket(Request $request)
+    {
+        $validated = $request->validate([
+            'branch_id' => 'required|exists:branches,id',
+            'service_category_id' => 'required|exists:service_categories,id',
+            'customer_name' => 'required|string|max:100',
+            'customer_phone' => 'nullable|string|max:20',
+            'priority_category_id' => 'nullable|exists:priority_categories,id',
+        ]);
+
+        $defaultPriority = PriorityCategory::where('code', 'REGULAR')->first()->id 
+            ?? PriorityCategory::first()->id;
+
+        $token = $this->queueService->generateToken(
+            (int) $validated['branch_id'],
+            (int) $validated['service_category_id'],
+            (int) ($validated['priority_category_id'] ?? $defaultPriority),
+            [
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'] ?? null,
+            ],
+            'kiosk'
+        );
+
+        return redirect()->route('kiosk.printSlip', $token->id)
+            ->with('success', "Ticket {$token->token_number} generated for {$token->customer_name}.");
     }
 
     public function liveApi(int $branchId)

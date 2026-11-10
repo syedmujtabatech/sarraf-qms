@@ -26,25 +26,78 @@
       <i class="bx bx-shield-plus me-1"></i> Manager Override
     </button>
 
-    <!-- Branch Selector Dropdown -->
-    <form method="GET" action="{{ route('admin.dashboard') }}" class="d-flex align-items-center">
-      <div class="input-group input-group-sm">
-        <label class="input-group-text bg-white fw-semibold" for="branchSelect">
-          <i class="bx bx-buildings text-primary me-1"></i>
-        </label>
-        <select class="form-select fw-semibold" id="branchSelect" name="branch_id" onchange="this.form.submit()">
-          @foreach($branches as $b)
-            <option value="{{ $b->id }}" {{ $b->id == $selectedBranchId ? 'selected' : '' }}>
-              {{ $b->code }} - {{ $b->name }}
-            </option>
-          @endforeach
-        </select>
-      </div>
-    </form>
+    <!-- Branch Selector or Locked Badge -->
+    @if($isBranchManager ?? false)
+      <span class="badge bg-label-primary px-3 py-2 d-flex align-items-center">
+        <i class="bx bx-buildings me-1"></i> {{ $currentBranch->name ?? 'Your Branch' }}
+      </span>
+    @else
+      <form method="GET" action="{{ route('admin.dashboard') }}" class="d-flex align-items-center">
+        <div class="input-group input-group-sm">
+          <label class="input-group-text bg-white fw-semibold" for="branchSelect">
+            <i class="bx bx-buildings text-primary me-1"></i>
+          </label>
+          <select class="form-select fw-semibold" id="branchSelect" name="branch_id" onchange="this.form.submit()">
+            @foreach($branches as $b)
+              <option value="{{ $b->id }}" {{ $b->id == $selectedBranchId ? 'selected' : '' }}>
+                {{ $b->code }} - {{ $b->name }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+      </form>
+    @endif
 
     <button type="button" class="btn btn-sm btn-primary" onclick="window.location.reload()">
       <i class="bx bx-refresh"></i>
     </button>
+  </div>
+</div>
+
+@php
+  $currentHost = request()->getHttpHost();
+  $isLocal = in_array(request()->getHost(), ['127.0.0.1', 'localhost']);
+  if ($isLocal && !empty(config('app.url')) && !str_contains(config('app.url'), 'localhost') && !str_contains(config('app.url'), '127.0.0.1')) {
+      $baseUrl = rtrim(config('app.url'), '/');
+  } else {
+      $scheme = (request()->isSecure() || request()->header('x-forwarded-proto') === 'https') ? 'https' : request()->getScheme();
+      $baseUrl = $scheme . '://' . $currentHost;
+  }
+  $branchQrUrl = $baseUrl . '/join?branch=' . ($currentBranch->id ?? 1);
+@endphp
+
+<!-- Prominent Branch QR Pass & Action Hero Card -->
+<div class="card bg-white border border-primary border-opacity-25 shadow-sm rounded-4 mb-4 p-3">
+  <div class="row align-items-center">
+    <div class="col-auto">
+      <div class="p-1 bg-light rounded-3 border text-center shadow-xs">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=95x95&data={{ urlencode($branchQrUrl) }}" 
+             alt="Branch QR" width="85" height="85" class="img-fluid rounded" />
+      </div>
+    </div>
+    <div class="col">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge bg-primary text-uppercase font-monospace">{{ $currentBranch->code ?? 'SRF-001' }}</span>
+        <h5 class="fw-bold mb-0 text-dark">{{ $currentBranch->name ?? 'Main Branch' }} &bull; Mobile Entrance QR Pass</h5>
+      </div>
+      <p class="text-muted small mb-0">
+        Customers scan this QR code with their mobile camera to enter their name & phone and generate an instant queue ticket.
+      </p>
+      <div class="font-monospace text-primary small mt-1" style="font-size: 11px;">
+        <i class="bx bx-link me-1"></i>{{ $branchQrUrl }}
+      </div>
+    </div>
+    <div class="col-12 col-md-auto mt-3 mt-md-0 d-flex flex-wrap gap-2">
+      <a href="{{ route('admin.branches.qr', $currentBranch->id ?? 1) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+        <i class="bx bx-printer me-1"></i> Print QR Standee
+      </a>
+      <a href="{{ $branchQrUrl }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+        <i class="bx bx-mobile-alt me-1"></i> Test Mobile Pass
+      </a>
+      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#quickTicketModal">
+        <i class="bx bx-plus-circle me-1"></i> Issue Ticket
+      </button>
+    </div>
   </div>
 </div>
 
@@ -204,15 +257,29 @@
                   <span class="badge bg-primary text-white fw-bold me-1">#{{ $c->counter_number }}</span>
                   <span class="fw-bold text-dark">{{ $c->name }}</span>
                 </div>
-                @if($c->status === 'serving')
-                  <span class="badge bg-label-primary pulse-dot">Serving</span>
-                @elseif($c->status === 'online')
-                  <span class="badge bg-label-success">Available</span>
-                @elseif($c->status === 'break')
-                  <span class="badge bg-label-warning">Break</span>
-                @else
-                  <span class="badge bg-label-secondary">Offline</span>
-                @endif
+                <div class="d-flex align-items-center gap-1">
+                  @if($c->status === 'serving')
+                    <span class="badge bg-label-primary pulse-dot">Serving</span>
+                  @elseif($c->status === 'online')
+                    <span class="badge bg-label-success">Online</span>
+                  @elseif($c->status === 'break')
+                    <span class="badge bg-label-warning">Break</span>
+                  @else
+                    <span class="badge bg-label-secondary">Offline</span>
+                  @endif
+                  <form action="{{ route('admin.counters.toggle', $c->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    @if($c->status === 'online' || $c->status === 'serving')
+                      <button type="submit" class="btn btn-xs btn-outline-warning py-0 px-1" title="Close / Pause Counter">
+                        <i class="bx bx-pause"></i> Close
+                      </button>
+                    @else
+                      <button type="submit" class="btn btn-xs btn-outline-success py-0 px-1" title="Start / Open Counter">
+                        <i class="bx bx-play"></i> Start
+                      </button>
+                    @endif
+                  </form>
+                </div>
               </div>
 
               <!-- Teller Info -->
@@ -359,7 +426,7 @@
                 </span>
                 <div>
                   <div class="fw-semibold" style="font-size: 13px;">{{ $srv->name }}</div>
-                  <div class="urdu-font text-muted" style="font-size: 11px; line-height: 1.2;">{{ $srv->name_ur }}</div>
+                  <div class="text-muted small" style="font-size: 11px;">Prefix: {{ $srv->prefix }} &bull; ~{{ $srv->avg_service_time_mins }}m</div>
                 </div>
               </div>
               <span class="badge bg-label-primary fs-6">{{ $srv->tokens_count }}</span>
@@ -441,6 +508,7 @@
     </div>
   </div>
 </div>
+
 <!-- Branch Manager Floor Audio Broadcast Modal -->
 <div class="modal fade" id="managerBroadcastModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -490,6 +558,58 @@
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-warning fw-bold px-4">
             <i class="bx bx-broadcast me-1"></i> Broadcast Across Lobby Speakers
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Ticket Issuance Modal for Branch Manager & Admin -->
+<div class="modal fade" id="quickTicketModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form action="{{ route('admin.quickTicket') }}" method="POST">
+        @csrf
+        <input type="hidden" name="branch_id" value="{{ $currentBranch->id ?? 1 }}">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title fw-bold">
+            <i class="bx bx-receipt text-primary me-1"></i> Issue Customer Ticket ({{ $currentBranch->code ?? 'Branch' }})
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Select Service <span class="text-danger">*</span></label>
+            <select name="service_category_id" class="form-select" required>
+              @foreach($services as $s)
+                <option value="{{ $s->id }}">{{ $s->prefix }} - {{ $s->name }} (Avg ~{{ $s->avg_service_time_mins }}m)</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Customer Full Name <span class="text-danger">*</span></label>
+            <input type="text" name="customer_name" class="form-control" placeholder="e.g. Tariq Mehmood" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Mobile Phone (Optional)</label>
+            <input type="tel" name="customer_phone" class="form-control" placeholder="e.g. 0300-1234567">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Priority Classification</label>
+            <select name="priority_category_id" class="form-select">
+              @foreach($priorities as $pri)
+                <option value="{{ $pri->id }}" {{ $pri->code === 'REGULAR' ? 'selected' : '' }}>
+                  {{ $pri->name }} @if($pri->weight_multiplier > 1) (Fast-Track) @endif
+                </option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bx bx-printer me-1"></i> Generate & Print Ticket
           </button>
         </div>
       </form>

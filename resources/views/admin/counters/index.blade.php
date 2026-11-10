@@ -10,15 +10,21 @@
   </div>
   <div class="d-flex gap-2">
     <!-- Branch Filter -->
-    <form method="GET" action="{{ route('admin.counters.index') }}" class="d-flex align-items-center">
-      <select class="form-select form-select-sm" name="branch_id" onchange="this.form.submit()">
-        @foreach($branches as $b)
-          <option value="{{ $b->id }}" {{ $b->id == $branchId ? 'selected' : '' }}>
-            {{ $b->code }} - {{ $b->name }}
-          </option>
-        @endforeach
-      </select>
-    </form>
+    @if($isBranchManager ?? false)
+      <span class="badge bg-label-primary px-3 py-2 d-flex align-items-center">
+        <i class="bx bx-buildings me-1"></i> {{ $branches->first()->name ?? 'Your Branch' }}
+      </span>
+    @else
+      <form method="GET" action="{{ route('admin.counters.index') }}" class="d-flex align-items-center">
+        <select class="form-select form-select-sm" name="branch_id" onchange="this.form.submit()">
+          @foreach($branches as $b)
+            <option value="{{ $b->id }}" {{ $b->id == $branchId ? 'selected' : '' }}>
+              {{ $b->code }} - {{ $b->name }}
+            </option>
+          @endforeach
+        </select>
+      </form>
+    @endif
     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCounterModal">
       <i class="bx bx-plus me-1"></i> Add Counter
     </button>
@@ -112,6 +118,18 @@
               @endif
             </td>
             <td class="text-end">
+              <form action="{{ route('admin.counters.toggle', $c->id) }}" method="POST" class="d-inline">
+                @csrf
+                @if($c->status === 'online' || $c->status === 'serving')
+                  <button type="submit" class="btn btn-sm btn-outline-warning" title="Pause / Close Counter">
+                    <i class="bx bx-pause me-1"></i> Close
+                  </button>
+                @else
+                  <button type="submit" class="btn btn-sm btn-outline-success" title="Start / Open Counter">
+                    <i class="bx bx-play me-1"></i> Start
+                  </button>
+                @endif
+              </form>
               <button class="btn btn-sm btn-icon btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editCounterModal{{ $c->id }}">
                 <i class="bx bx-edit"></i>
               </button>

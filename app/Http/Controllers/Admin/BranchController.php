@@ -11,13 +11,26 @@ class BranchController extends Controller
 {
     public function index()
     {
-        $branches = Branch::with(['region'])->withCount(['counters', 'tokens' => function ($q) {
-            $q->whereDate('created_at', today());
-        }])->get();
+        $user = auth()->user();
+        $isBranchManager = $user && $user->role === 'branch_manager';
 
+        $query = Branch::with(['region'])->withCount(['counters', 'tokens' => function ($q) {
+            $q->whereDate('created_at', today());
+        }]);
+
+        if ($isBranchManager && $user->branch_id) {
+            $query->where('id', $user->branch_id);
+        }
+
+        $branches = $query->get();
         $regions = Region::where('is_active', true)->get();
 
-        return view('admin.branches.index', compact('branches', 'regions'));
+        return view('admin.branches.index', compact('branches', 'regions', 'isBranchManager'));
+    }
+
+    public function showQr(Branch $branch)
+    {
+        return view('admin.branches.qr', compact('branch'));
     }
 
     public function store(Request $request)

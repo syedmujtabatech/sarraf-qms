@@ -50,9 +50,7 @@
           SBP Policy & Circular 01/2018: Special Persons, Senior Citizens (60+) & Pensioners are provided Fast-Track Priority Service.
         </span>
       </div>
-      <span class="urdu-font small d-none d-lg-inline" style="line-height: 1;">
-        اسٹیٹ بینک ہدایات: معذور افراد، پنشنرز اور بزرگ شہریوں کو ترجیحی سہولت دی جاتی ہے
-      </span>
+      
     </div>
   </div>
 
@@ -79,7 +77,7 @@
         </div>
         <div class="col-md-7 col-12 text-md-start text-center mt-2 mt-md-0">
           <span class="badge bg-label-primary px-3 py-1 mb-1 fw-bold">MOBILE TOUCHLESS E-PASS</span>
-          <h5 class="fw-bold mb-1 text-dark">اسکرین کو چھوئے بغیر اپنے موبائل سے ٹوکن حاصل کریں</h5>
+          <h5 class="fw-bold mb-1 text-dark">Scan with Camera to Get Mobile Pass</h5>
           <p class="text-muted small mb-0">
             Scan this QR code with your mobile camera to choose service, enter your name, and receive your digital queue pass with live status updates.
           </p>
@@ -94,7 +92,7 @@
 
     <div class="text-center mb-4">
       <h2 class="fw-bold text-dark mb-1" id="screenHeading">Please Select Your Banking Service</h2>
-      <p class="urdu-font fs-4 text-primary mb-0" id="screenHeadingUrdu">براہ کرم مطلوبہ بینکاری سروس کا انتخاب فرمائیں</p>
+      <p class="text-muted small mb-0">Select your banking service to proceed</p>
     </div>
 
     <!-- Service Categories Grid -->
@@ -114,7 +112,7 @@
                   <small class="text-muted"><i class="bx bx-time me-1"></i>~{{ $srv->avg_service_time_mins }}m</small>
                 </div>
                 <h5 class="fw-bold mb-1 text-dark">{{ $srv->name }}</h5>
-                <h6 class="urdu-font text-primary mb-0" style="line-height: 1.4;">{{ $srv->name_ur }}</h6>
+                
               </div>
             </div>
           </div>
@@ -148,7 +146,7 @@
         <div class="modal-header bg-primary text-white py-3 rounded-top-4">
           <div>
             <h5 class="modal-title fw-bold text-white mb-0" id="modalServiceTitle">Service Selected</h5>
-            <div class="urdu-font text-white-50" id="modalServiceTitleUrdu">سروس کا انتخاب</div>
+            
           </div>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -159,7 +157,7 @@
             <h6 class="fw-bold text-dark mb-1">
               <i class="bx bx-check-shield text-danger me-1"></i> Select Customer Priority Category (SBP Guidelines)
             </h6>
-            <div class="urdu-font text-muted small mb-3">اگر آپ معذور، بزرگ یا پنشن ہولڈر ہیں تو ترجیحی آپشن منتخب کریں</div>
+            
 
             <div class="row g-2">
               @foreach($priorities as $pri)
@@ -171,7 +169,7 @@
                         <i class="bx {{ $pri->icon }} fs-3 me-2"></i>
                         <div>
                           <div class="fw-bold">{{ $pri->name }}</div>
-                          <div class="urdu-font small" style="line-height: 1.2;">{{ $pri->name_ur }}</div>
+                          
                         </div>
                       </div>
                       @if($pri->weight_multiplier > 1)
@@ -189,7 +187,7 @@
             <h6 class="fw-bold mb-1 text-dark">
               <i class="bx bx-user-pin text-primary me-1"></i> Customer Identification & Title (صارف کی تفصیلات)
             </h6>
-            <div class="urdu-font text-muted small mb-3">کاؤنٹر پر بلانے کے لیے القاب اور نام درج فرمائیں</div>
+            
 
             <!-- Salutation Touch Pills -->
             <div class="mb-3">

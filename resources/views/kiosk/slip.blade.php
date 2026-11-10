@@ -21,20 +21,18 @@
       <div class="d-inline-flex p-2 rounded-circle bg-primary text-white mb-2">
         <i class="bx bxs-bank fs-2"></i>
       </div>
-      <h4 class="fw-bolder mb-0 text-uppercase tracking-wide">SARRAF-QMS &bull; صراف کیو ایم ایس</h4>
+      <h4 class="fw-bolder mb-0 text-uppercase tracking-wide">SARRAF BANKING QMS</h4>
       <div class="fw-semibold text-muted small">{{ $token->branch->name }}</div>
       <small class="text-muted d-block" style="font-size: 11px;">Branch Code: {{ $token->branch->code }} &bull; {{ $token->branch->city }}</small>
     </div>
 
     <!-- Big Token Number -->
     <div class="text-center my-3 py-2 bg-light rounded-3 border border-dashed border-dark">
-      <small class="text-muted fw-bold text-uppercase d-block" style="font-size: 11px;">Your Queue Token Number</small>
+      <small class="text-muted fw-bold text-uppercase d-block" style="font-size: 11px;">Queue Token Number</small>
       <h1 class="display-3 fw-bolder text-primary mb-0 font-monospace" style="letter-spacing: 3px;">
         {{ $token->token_number }}
       </h1>
-      <div class="urdu-font fs-5 text-dark mt-1" style="line-height: 1.2;">
-        آپ کا ٹوکن نمبر
-      </div>
+      <small class="text-muted fw-semibold">Please wait for your turn</small>
     </div>
 
     <!-- Service & Priority Classification -->
@@ -43,9 +41,6 @@
         <span class="text-muted small">Banking Service:</span>
         <strong class="text-end">{{ $token->serviceCategory->name }}</strong>
       </div>
-      <div class="text-end urdu-font text-primary small" style="line-height: 1;">
-        {{ $token->serviceCategory->name_ur }}
-      </div>
 
       <div class="d-flex justify-content-between align-items-center mt-2">
         <span class="text-muted small">Priority Tier:</span>
@@ -53,11 +48,6 @@
           {{ $token->priorityCategory->name }}
         </span>
       </div>
-      @if($token->priorityCategory->code !== 'REGULAR')
-        <small class="d-block text-danger fw-bold text-end mt-1" style="font-size: 10px;">
-          * SBP Circular 01/2018 Fast-Track Precedence *
-        </small>
-      @endif
     </div>
 
     <!-- Estimated Wait & Position -->
@@ -76,18 +66,12 @@
     <div class="small mb-3">
       <div class="d-flex justify-content-between mb-1">
         <span class="text-muted">Customer:</span>
-        <strong class="text-end">{{ $token->salutation ? $token->salutation . ' ' : '' }}{{ $token->customer_name }}</strong>
+        <strong class="text-end">{{ $token->customer_name }}</strong>
       </div>
-      @if($token->account_number)
+      @if($token->customer_phone)
         <div class="d-flex justify-content-between mb-1">
-          <span class="text-muted">Account No:</span>
-          <span class="font-monospace fw-bold">{{ $token->account_number }}</span>
-        </div>
-      @endif
-      @if($token->transaction_purpose)
-        <div class="d-flex justify-content-between mb-1">
-          <span class="text-muted">Service / Purpose:</span>
-          <span>{{ $token->transaction_purpose }} @if($token->expected_amount) (PKR {{ number_format($token->expected_amount, 0) }}) @endif</span>
+          <span class="text-muted">Phone:</span>
+          <span class="font-monospace">{{ $token->customer_phone }}</span>
         </div>
       @endif
       <div class="d-flex justify-content-between">
@@ -119,11 +103,8 @@
       <div class="text-muted small mt-1 font-monospace" style="font-size: 10px;">
         {{ $mobileTrackUrl }}
       </div>
-      <div class="urdu-font text-muted small mt-1" style="line-height: 1.2;">
-        موبائل سے کیو آر کوڈ اسکین کریں اور لائیو اسٹیٹس دیکھیں
-      </div>
       <small class="text-muted d-block mt-2" style="font-size: 9px;">
-        Sarraf-QMS (صراف) &bull; National Bank Queue System &bull; State Bank Regulatory Compliant
+        Sarraf Banking Queue System &bull; National Operations
       </small>
     </div>
   </div>

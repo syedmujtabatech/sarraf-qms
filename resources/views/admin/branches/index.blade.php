@@ -60,16 +60,21 @@
               @endif
             </td>
             <td class="text-end">
+              <a href="{{ route('admin.branches.qr', $b->id) }}" class="btn btn-sm btn-outline-primary me-1" title="View & Print Mobile QR Standee">
+                <i class="bx bx-qr-scan me-1"></i> Branch QR
+              </a>
               <button class="btn btn-sm btn-icon btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editBranchModal{{ $b->id }}">
                 <i class="bx bx-edit"></i>
               </button>
-              <form action="{{ route('admin.branches.destroy', $b->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this branch?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-sm btn-icon btn-outline-danger">
-                  <i class="bx bx-trash"></i>
-                </button>
-              </form>
+              @if(!($isBranchManager ?? false))
+                <form action="{{ route('admin.branches.destroy', $b->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this branch?')">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="btn btn-sm btn-icon btn-outline-danger">
+                    <i class="bx bx-trash"></i>
+                  </button>
+                </form>
+              @endif
             </td>
           </tr>
 

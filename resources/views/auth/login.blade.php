@@ -323,8 +323,8 @@
               id="password"
               class="form-control"
               name="password"
-              value="admin123"
-              placeholder="Enter password"
+              value="sarraf123"
+              placeholder="sarraf123"
               required />
             <span class="input-group-text bg-white cursor-pointer" onclick="togglePasswordVisibility()"><i class="bx bx-hide" id="pwdToggleIcon"></i></span>
           </div>
